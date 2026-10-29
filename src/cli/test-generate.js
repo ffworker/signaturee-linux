@@ -145,13 +145,25 @@ export async function runTestCommand({
   }
   const caCertificate = env.SIGNATUREE_LDAP_CA_FILE
     ? await readFile(env.SIGNATUREE_LDAP_CA_FILE, 'utf8') : undefined;
-  const directory = directoryFactory({
+  const backendDirectory = directoryFactory({
     url: env.SIGNATUREE_LDAP_URL,
     baseDN: env.SIGNATUREE_LDAP_BASE_DN,
     bindDN: env.SIGNATUREE_LDAP_BIND_DN,
     bindPassword: env.SIGNATUREE_LDAP_BIND_PASSWORD,
     ...(caCertificate ? { caCertificate } : {}),
   });
+  // AD aliases/UPNs must not redirect an allowlisted request to an
+  // unrelated account. This CLI accepts only exact sAMAccountName matches.
+  const directory = {
+    async getUser(account) {
+      const user = await backendDirectory.getUser(account);
+      if (user && (typeof user.accountName !== 'string' ||
+          user.accountName.toLowerCase() !== options.username.toLowerCase())) {
+        throw new TestCliError('TEST_USER_NOT_ALLOWED', 'Resolved account not in test allowlist');
+      }
+      return user;
+    },
+  };
   const { catalog, assetsByKey } = await catalogLoader({
     rootDirectory: config.templatesRoot, profiles: config.profiles,
   });
