@@ -15,6 +15,6 @@ const [html, logo] = await Promise.all([
 const rtf = await convertHtmlToRtf({
   html, assets: [{ path: 'DEMO-Dateien/logo.svg', bytes: logo }],
 });
-await writeFile(join(directory, 'DEMO.rtf'), rtf, { flag: 'wx', mode: 0o600 });
+await writeFile(join(directory, 'DEMO.rtf'), rtf, { flag: 'w', mode: 0o600 });
 console.log('RTF demo generated: ' + join(directory, 'DEMO.rtf'));
 console.log('Synthetic data only; final Classic Outlook layout has NOT been validated.');
