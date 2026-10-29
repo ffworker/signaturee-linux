@@ -6,7 +6,7 @@ function message(text, isError = false) {
 async function request(path, options = {}) {
   const res = await fetch(path, { cache: 'no-store', ...options });
   const result = await res.json();
-  if (!res.ok) throw new Error(result.error || 'Request failed');
+  if (!res.ok) throw new Error([result.code || result.error || 'Request failed', result.file].filter(Boolean).join(': '));
   return result;
 }
 async function refresh() {
