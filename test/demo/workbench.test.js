@@ -63,7 +63,7 @@ test('workbench rejects mismatched keys, unsafe user data, and missing template 
   }), /Invalid offline user attribute/);
   await assert.rejects(loadLocalWorkbench({
     ...base, env: { ...environment, SIGNATUREE_PROFILES_JSON: '[{"key":"MISSING"}]', SIGNATUREE_OFFLINE_PROFILE: 'MISSING' },
-  }), { code: 'TEMPLATE_UNAVAILABLE' });
+  }), { code: 'TEMPLATE_UNAVAILABLE', filename: 'MISSING_Template.htm' });
 });
 
 test('workbench HTTP uses configured HR, downloads its RTF, and rejects arbitrary user', async t => {
@@ -96,4 +96,13 @@ test('workbench HTTP uses configured HR, downloads its RTF, and rejects arbitrar
   assert.match((await fetch(base + '/api/download/htm')).headers.get('content-disposition'), /HR\.htm/);
   assert.deepEqual(Buffer.from(await (await fetch(base + '/api/download/rtf')).arrayBuffer()), fakeRtf);
   assert.deepEqual(await readFile(join(outputs, generated.snapshot, 'HR.rtf')), fakeRtf);
+
+  // A template removed after startup must produce an actionable *safe* UI error.
+  await rm(join(templates, 'HR_Template.txt'));
+  const unavailable = await fetch(base + '/api/preview');
+  assert.equal(unavailable.status, 422);
+  assert.deepEqual(await unavailable.json(), {
+    error: 'Offline template validation failed',
+    code: 'TEMPLATE_UNAVAILABLE', file: 'HR_Template.txt',
+  });
 });
