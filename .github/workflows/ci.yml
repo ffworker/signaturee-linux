@@ -36,3 +36,35 @@ jobs:
           path: artifacts/demo/
           if-no-files-found: error
           retention-days: 7
+
+  libreoffice-rtf:
+    name: Ubuntu LibreOffice — real RTF conversion
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install headless LibreOffice Writer if absent
+        run: |
+          if ! command -v soffice >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends libreoffice-writer
+          fi
+          soffice --version
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify actual HTML to RTF conversion
+        env:
+          SIGNATUREE_TEST_LIBREOFFICE: "1"
+        run: node --test test/conversion/rtf.test.js
+      - name: Generate real RTF demo with synthetic source data
+        run: npm run demo:rtf
+      - name: Upload HTML/TXT/RTF sample
+        uses: actions/upload-artifact@v4
+        with:
+          name: signaturee-linux-html-txt-rtf-demo
+          path: artifacts/demo/
+          if-no-files-found: error
+          retention-days: 7
