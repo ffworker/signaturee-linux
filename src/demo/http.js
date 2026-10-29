@@ -158,7 +158,7 @@ export function createOfflineDemoServer({
         ]);
         if (safeCodes.has(err?.code)) {
           const file = typeof err.filename === 'string' &&
-            /^(?:[A-Za-z0-9_-]+_Template\\.(?:htm|txt)|[A-Za-z0-9_-]+-Dateien\\/[\\p{L}\\p{N} _().\\/-]+)$/u.test(err.filename)
+            /^(?:[A-Za-z0-9_-]+_Template\.(?:htm|txt)|[A-Za-z0-9_-]+-Dateien\/[\p{L}\p{N} _().\/-]+)$/u.test(err.filename)
             ? err.filename : undefined;
           return send(res, 422, {
             error: 'Offline template validation failed',
