@@ -5,7 +5,14 @@ import { loadLocalWorkbench } from '../src/demo/workbench.js';
 
 // Validate startup config/templates before opening a browser port.
 // Files are reloaded per request so local changes appear on refresh.
-await loadLocalWorkbench();
+try {
+  await loadLocalWorkbench();
+} catch (err) {
+  // Print only sanitized type/category plus a configured relative filename.
+  console.error('FAIL:', err?.code || 'WORKBENCH_CONFIG_INVALID',
+    typeof err?.filename === 'string' ? err.filename : '');
+  process.exit(1);
+}
 const server = createOfflineDemoServer({
   loadContext: loadLocalWorkbench, mode: 'offline-workbench',
 });
