@@ -56,6 +56,18 @@ test('enforces LDAPS, a scoped base DN, TLS verification and finite timeouts', (
   assert.ok(settings.connectTimeout > 0);
 });
 
+test('plaintext LDAP is rejected unless explicitly opted in for isolated lab', () => {
+  const plain = { ...conf, url: 'ldap://dc.example.invalid:389' };
+  assert.throws(() => validateDirectoryConfig(plain), TypeError);
+  assert.throws(() => validateDirectoryConfig({ ...plain, allowInsecureTestLdap: 'true' }), TypeError);
+  assert.throws(() => validateDirectoryConfig({ ...plain, caCertificate: '-----BEGIN CERTIFICATE-----test' , allowInsecureTestLdap: true }), TypeError);
+  const accepted = validateDirectoryConfig({ ...plain, allowInsecureTestLdap: true });
+  const options = directoryClientOptions(accepted);
+  assert.equal(options.url, plain.url);
+  assert.equal('tlsOptions' in options, false);
+  assert.equal(directoryClientOptions(validateDirectoryConfig(conf)).tlsOptions.rejectUnauthorized, true);
+});
+
 test('LDAP filters escape user-controlled assertion values and never broaden to all', () => {
   assert.equal(escapeLdapValue('a*)(|(cn=*))'), 'a\\2a\\29\\28|\\28cn=\\2a\\29\\29');
   assert.ok(buildAccountFilter('a*').includes('(sAMAccountName=a\\2a)'));
