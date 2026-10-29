@@ -1,4 +1,4 @@
-# One-shot test-AD CLI only; no production credentials or mounts.
+# Test-AD CLI configured from .env. No ports or production shares.
 services:
   signaturee-test:
     build: .
@@ -14,18 +14,16 @@ services:
     tmpfs:
       - /tmp:rw,nosuid,nodev,mode=1777,size=268435456
     volumes:
-      - ./dev/config.json:/config/test.json:ro
       - ./dev/templates:/templates:ro
       - ./dev/output:/output:rw
-    secrets:
-      - ldap-bind-password
     environment:
       SIGNATUREE_LDAP_URL: ${SIGNATUREE_LDAP_URL:-}
       SIGNATUREE_LDAP_BASE_DN: ${SIGNATUREE_LDAP_BASE_DN:-}
       SIGNATUREE_LDAP_BIND_DN: ${SIGNATUREE_LDAP_BIND_DN:-}
-      SIGNATUREE_LDAP_BIND_PASSWORD_FILE: /run/secrets/ldap-bind-password
+      SIGNATUREE_LDAP_BIND_PASSWORD: ${SIGNATUREE_LDAP_BIND_PASSWORD:-}
       SIGNATUREE_LDAP_CA_FILE: ${SIGNATUREE_LDAP_CA_FILE:-}
+      SIGNATUREE_ALLOWED_TEST_ACCOUNTS_JSON: ${SIGNATUREE_ALLOWED_TEST_ACCOUNTS_JSON:-}
+      SIGNATUREE_PROFILES_JSON: ${SIGNATUREE_PROFILES_JSON:-}
+      SIGNATUREE_MAPPINGS_JSON: ${SIGNATUREE_MAPPINGS_JSON:-}
+      SIGNATUREE_STATIC_VALUES_JSON: ${SIGNATUREE_STATIC_VALUES_JSON:-}
     command: ["--help"]
-secrets:
-  ldap-bind-password:
-    file: ./dev/ldap-bind-password

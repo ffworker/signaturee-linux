@@ -49,6 +49,10 @@ versioning**. It does not change the Windows release branch or require a monorep
 See [Docker test CLI](docs/docker-test.md), [Test-AD generation CLI](docs/test-cli.md), [Trusted template loader](docs/template-catalog.md), [End-to-end synthetic pipeline](docs/integration.md), [Architecture](docs/architecture.md), [Publishing](docs/publishing.md), [RTF conversion](docs/rtf.md), [Milestones](docs/milestones.md),
 [How to test](docs/testing.md) and [the real test-AD LDAPS probe](docs/test-ldaps.md).
 
+### Configure your test AD with a single .env file
+
+Copy `.env.example` to `.env`, edit LDAPS, allowlisted account, profile and group mapping, then run the Docker CLI. See [env-only quickstart](docs/env-quickstart.md). This convenience mode exposes the **test-only** bind password in container environment metadata; never use a privileged or production service account.
+
 ### Test Docker on a Linux machine (no AD credentials)
 
 With Docker Engine installed and the current main branch checked out:
