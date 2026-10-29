@@ -20,7 +20,8 @@ release exists until the end-to-end workflow passes against a test AD and Classi
 5. **M4 — API and UI:** After PR #7's fake-AD→renderer→RTF→snapshot
    pipeline, add trusted catalog loading and a properly authenticated operator API.
    Trusted disk-based catalog loading is added in PR #8; a user-authorized
-   CLI/API and Docker startup remain future work. Use a compatible subset
+   test-AD CLI is introduced in PR #9; an authenticated HTTP API, stable
+   Outlook deployment and Docker startup remain future work. Use a compatible subset
    of the existing Signaturee frontend,
    implement preview/preflight/generate routes, and keep authorization server-side.
 6. **M5 — Docker development deployment:** Non-root OCI build and Compose, health checks,
