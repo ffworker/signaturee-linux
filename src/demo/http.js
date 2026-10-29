@@ -4,7 +4,7 @@ import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { prepareSignaturePreview } from '../core/preview.js';
 import { generateSignatureSnapshot } from '../services/generate.js';
-import { DEMO_ACCOUNT, DEMO_KEY, loadOfflineDemo } from './offline.js';
+import { DEMO_ACCOUNT, loadOfflineDemo } from './offline.js';
 
 const WEB = fileURLToPath(new URL('../../web/', import.meta.url));
 const PUBLIC = Object.freeze({
@@ -45,6 +45,7 @@ export function createOfflineDemoServer({
   loadContext = loadOfflineDemo,
   preview = prepareSignaturePreview,
   generate = generateSignatureSnapshot,
+  mode = 'offline-demo',
 } = {}) {
   let lastSnapshot = null;
   let generating = false;
@@ -80,19 +81,29 @@ export function createOfflineDemoServer({
         return send(res, 200, await readFile(join(WEB, name)), mime);
       }
       if (req.method === 'GET' && url.pathname === '/api/health') {
-        return send(res, 200, { status: 'ok', mode: 'offline-demo', ldap: false });
+        return send(res, 200, { status: 'ok', mode, ldap: false });
       }
       if (req.method === 'GET' && url.pathname === '/api/preview') {
         const ctx = await loadContext({ outputRoot });
         const result = await preview(ctx);
         const signature = result.signatures[0];
-        if (result.accountName !== DEMO_ACCOUNT || signature?.key !== DEMO_KEY) {
+        const key = ctx.requestedKeys?.[0];
+        if (ctx.username !== DEMO_ACCOUNT || result.accountName !== DEMO_ACCOUNT ||
+            ctx.requestedKeys.length !== 1 || result.signatures.length !== 1 ||
+            signature?.key !== key) {
           throw new Error('Unexpected demo identity');
         }
-        const logo = ctx.assetsByKey[DEMO_KEY][0].bytes;
-        // An inline local image keeps the sandboxed preview free of external assets.
-        const image = 'data:image/svg+xml;base64,' + Buffer.from(logo).toString('base64');
-        const safePreview = signature.html.replaceAll('DEMO-Dateien/logo.svg', image);
+        let safePreview = signature.html;
+        const assets = ctx.assetsByKey[key] ?? [];
+        const imageMimes = { svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg',
+          jpeg: 'image/jpeg', gif: 'image/gif', bmp: 'image/bmp' };
+        for (const asset of assets) {
+          const extension = asset.path.split('.').at(-1).toLowerCase();
+          const mime = imageMimes[extension];
+          if (!mime) throw new Error('Unexpected demo image');
+          const dataUri = 'data:' + mime + ';base64,' + Buffer.from(asset.bytes).toString('base64');
+          safePreview = safePreview.replaceAll(asset.path, dataUri);
+        }
         return send(res, 200, {
           accountName: result.accountName, key: signature.key,
           html: safePreview, text: signature.text,
@@ -110,14 +121,16 @@ export function createOfflineDemoServer({
         try {
           const ctx = await loadContext({ outputRoot });
           const result = await generate(ctx);
-          if (result.accountName !== DEMO_ACCOUNT ||
-              result.keys.length !== 1 || result.keys[0] !== DEMO_KEY) {
+          const key = ctx.requestedKeys?.[0];
+          if (ctx.username !== DEMO_ACCOUNT || result.accountName !== DEMO_ACCOUNT ||
+              ctx.requestedKeys.length !== 1 ||
+              result.keys.length !== 1 || result.keys[0] !== key) {
             throw new Error('Unexpected generation result');
           }
-          lastSnapshot = result.snapshotPath;
+          lastSnapshot = { path: result.snapshotPath, key };
           return send(res, 200, {
-            status: 'generated', accountName: DEMO_ACCOUNT,
-            snapshot: basename(lastSnapshot), formats: Object.keys(DOWNLOADS),
+            status: 'generated', accountName: DEMO_ACCOUNT, key,
+            snapshot: basename(lastSnapshot.path), formats: Object.keys(DOWNLOADS),
           });
         } finally {
           generating = false;
@@ -127,8 +140,11 @@ export function createOfflineDemoServer({
       if (req.method === 'GET' && download) {
         if (!lastSnapshot) return error(res, 404, 'Generate a demo signature first');
         const ext = download[1];
-        res.setHeader('Content-Disposition', 'attachment; filename="DEMO.' + ext + '"');
-        return send(res, 200, await readFile(join(lastSnapshot, DEMO_KEY + '.' + ext)), DOWNLOADS[ext]);
+        res.setHeader('Content-Disposition',
+          'attachment; filename="' + lastSnapshot.key + '.' + ext + '"');
+        return send(res, 200,
+          await readFile(join(lastSnapshot.path, lastSnapshot.key + '.' + ext)),
+          DOWNLOADS[ext]);
       }
       return error(res, 404, 'Not found');
     })().catch(() => {
