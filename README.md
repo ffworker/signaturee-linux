@@ -45,7 +45,7 @@ versioning**. It does not change the Windows release branch or require a monorep
 - [ ] Web UI and API
 - [ ] Dockerfile, Compose and end-to-end Outlook acceptance
 
-See [End-to-end synthetic pipeline](docs/integration.md), [Architecture](docs/architecture.md), [Publishing](docs/publishing.md), [RTF conversion](docs/rtf.md), [Milestones](docs/milestones.md),
+See [Trusted template loader](docs/template-catalog.md), [End-to-end synthetic pipeline](docs/integration.md), [Architecture](docs/architecture.md), [Publishing](docs/publishing.md), [RTF conversion](docs/rtf.md), [Milestones](docs/milestones.md),
 [How to test](docs/testing.md) and [the real test-AD LDAPS probe](docs/test-ldaps.md).
 
 ### Try the renderer before LDAP or Docker
