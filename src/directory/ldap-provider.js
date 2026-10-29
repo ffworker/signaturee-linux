@@ -34,7 +34,8 @@ export function validateDirectoryConfig(input) {
   let parsed;
   try { parsed = new URL(url); } catch { throw new TypeError('Invalid directory URL'); }
   if (parsed.protocol !== 'ldaps:' || !parsed.hostname || parsed.username ||
-      parsed.password || parsed.search || parsed.hash || parsed.pathname !== '/') {
+      parsed.password || parsed.search || parsed.hash ||
+      (parsed.pathname !== '' && parsed.pathname !== '/')) {
     throw new TypeError('Directory URL must be an LDAPS host/port URL without credentials or paths');
   }
   if (typeof baseDN !== 'string' || !baseDN.trim() ||
