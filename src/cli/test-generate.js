@@ -159,12 +159,12 @@ export async function runTestCommand({
           await realpath(secretPath) !== resolve(secretPath)) {
         throw Error('Unsafe secret file');
       }
-      bindPassword = (await readFile(secretPath, 'utf8')).replace(/\\r?\\n$/, '');
+      bindPassword = (await readFile(secretPath, 'utf8')).replace(/\r?\n$/, '');
     } catch {
       throw new TestCliError('DIRECTORY_NOT_CONFIGURED', 'Invalid LDAP secret file');
     }
   }
-  if (!bindPassword || /[\\r\\n]/.test(bindPassword)) {
+  if (!bindPassword || /[\r\n]/.test(bindPassword)) {
     throw new TestCliError('DIRECTORY_NOT_CONFIGURED', 'Test directory not configured');
   }
   const caCertificate = env.SIGNATUREE_LDAP_CA_FILE
