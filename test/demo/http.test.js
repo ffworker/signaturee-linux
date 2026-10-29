@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { createOfflineDemoServer } from '../../src/demo/http.js';
 import { generateSignatureSnapshot } from '../../src/services/generate.js';
 
-const fakeRtf = Buffer.from('{\rtf1\ansi ' + 'synthetic data '.repeat(8) + '}');
+const fakeRtf = Buffer.from('{\\rtf1\\ansi ' + 'synthetic data '.repeat(8) + '}');
 
 async function start(t) {
   const root = await mkdtemp(join(tmpdir(), 'signaturee-offline-http-'));
