@@ -176,3 +176,47 @@ test('broken test config and duplicate allowlist are refused', async t => {
   await s.updateConfig({ ...s.config, schema: 42 });
   await assert.rejects(loadTestConfig(s.configFile), { code: 'INVALID_CONFIG' });
 });
+
+
+test('mounted file secrets support preview without exporting a password', async t => {
+  const s = await sandbox(t);
+  const secret = join(s.root, 'read-only-service-password');
+  await writeFile(secret, 'synthetic-secret\n', { mode: 0o600 });
+  let seenPassword = null;
+  const result = await runTestCommand({
+    args: flags(s.configFile, '--preview', '--ack-test-directory'),
+    env: {
+      ...env,
+      SIGNATUREE_LDAP_BIND_PASSWORD: '',
+      SIGNATUREE_LDAP_BIND_PASSWORD_FILE: secret,
+    },
+    log() {},
+    directoryFactory(config) {
+      seenPassword = config.bindPassword;
+      return { async getUser() { return normalizedUser; } };
+    },
+  });
+  assert.equal(result.mode, 'preview');
+  assert.equal(seenPassword, 'synthetic-secret');
+  assert.deepEqual(await readdir(s.output), []);
+});
+
+test('both LDAP password sources or symlink secrets are rejected', async t => {
+  const s = await sandbox(t);
+  const secret = join(s.root, 'secret');
+  await writeFile(secret, 'fake-password', { mode: 0o600 });
+  await assert.rejects(runTestCommand({
+    args: flags(s.configFile, '--preview', '--ack-test-directory'),
+    env: { ...env, SIGNATUREE_LDAP_BIND_PASSWORD_FILE: secret },
+  }), { code: 'DIRECTORY_NOT_CONFIGURED' });
+  const link = join(s.root, 'secret-link');
+  await symlink(secret, link);
+  await assert.rejects(runTestCommand({
+    args: flags(s.configFile, '--preview', '--ack-test-directory'),
+    env: {
+      ...env,
+      SIGNATUREE_LDAP_BIND_PASSWORD: '',
+      SIGNATUREE_LDAP_BIND_PASSWORD_FILE: link,
+    },
+  }), { code: 'DIRECTORY_NOT_CONFIGURED' });
+});

@@ -24,7 +24,9 @@ release exists until the end-to-end workflow passes against a test AD and Classi
    Outlook deployment and Docker startup remain future work. Use a compatible subset
    of the existing Signaturee frontend,
    implement preview/preflight/generate routes, and keep authorization server-side.
-6. **M5 — Docker development deployment:** Non-root OCI build and Compose, health checks,
+6. **M5 — Docker development deployment:** PR #10 adds a non-root one-shot
+   test CLI container; a persistent HTTP web service and its health checks
+   are still missing. Non-root OCI build and Compose, health checks,
    configuration/SQLite storage, immutable image and explicitly mounted directories.
 7. **M6 — Acceptance:** Test Linux end-to-end using a real test LDAP directory, inspect
    resulting HTML/TXT/RTF and images in Classic Outlook, perform security review, then
