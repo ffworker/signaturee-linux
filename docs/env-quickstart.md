@@ -12,6 +12,8 @@ nano .env
 
 Edit the LDAPS URL/base/bind identity and **test-only** bind password, allowed account, template profile key and the exact distinguished name (DN) of a direct AD group that the selected test account belongs to. The JSON arrays in `.env` must remain valid JSON. For the default HR profile create `dev/templates/HR_Template.htm` and `dev/templates/HR_Template.txt` using trusted content. Optional images must be declared in `SIGNATUREE_PROFILES_JSON` and stored under `dev/templates`. Set `SIGNATUREE_LDAP_CA_FILE=/templates/lab-ca.pem` if using your own CA and copy its PEM there.
 
+For an **isolated AD lab only**, if certificates are unavailable and plain TCP/389 is enabled, set `SIGNATUREE_LDAP_URL=ldap://dc-test.example.invalid:389`, `SIGNATUREE_ALLOW_INSECURE_TEST_LDAP=true`, and leave `SIGNATUREE_LDAP_CA_FILE=` empty. This transmits the service-account password and directory data **unencrypted** over the network. Use a disposable read-only account; do not use this setting on shared/untrusted networks or against production AD. The default remains strict LDAPS; leaving the opt-in false rejects `ldap://`.
+
 The container runs as UID 10001. The host output directory must be writable by this UID, for example `sudo chown 10001:10001 dev/output`. Make sure template files/directories are readable by the container user.
 
 ~~~bash

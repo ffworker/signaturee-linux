@@ -29,11 +29,15 @@ export function validateDirectoryConfig(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     throw new TypeError('Directory configuration is required');
   }
-  const { url, baseDN, bindDN, bindPassword, caCertificate, timeoutMs = 8000 } = input;
+  const { url, baseDN, bindDN, bindPassword, caCertificate, timeoutMs = 8000, allowInsecureTestLdap = false } = input;
+  if (typeof allowInsecureTestLdap !== 'boolean') throw new TypeError('Invalid insecure LDAP opt-in');
   if (typeof url !== 'string') throw new TypeError('Directory URL is required');
   let parsed;
   try { parsed = new URL(url); } catch { throw new TypeError('Invalid directory URL'); }
-  if (parsed.protocol !== 'ldaps:' || !parsed.hostname || parsed.username ||
+  if (!['ldaps:', 'ldap:'].includes(parsed.protocol) ||
+      (parsed.protocol === 'ldap:' && !allowInsecureTestLdap) ||
+      (parsed.protocol === 'ldap:' && caCertificate !== undefined) ||
+      !parsed.hostname || parsed.username ||
       parsed.password || parsed.search || parsed.hash ||
       (parsed.pathname !== '' && parsed.pathname !== '/')) {
     throw new TypeError('Directory URL must be an LDAPS host/port URL without credentials or paths');
@@ -55,7 +59,7 @@ export function validateDirectoryConfig(input) {
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 30000) {
     throw new TypeError('Directory timeout must be between 1000 and 30000 ms');
   }
-  return Object.freeze({ url, baseDN, bindDN, bindPassword, caCertificate, timeoutMs });
+  return Object.freeze({ url, baseDN, bindDN, bindPassword, caCertificate, timeoutMs, allowInsecureTestLdap });
 }
 
 export function directoryClientOptions(config) {
@@ -64,11 +68,11 @@ export function directoryClientOptions(config) {
     timeout: config.timeoutMs,
     connectTimeout: config.timeoutMs,
     strictDN: true,
-    tlsOptions: {
+    ...(new URL(config.url).protocol === 'ldaps:' ? { tlsOptions: {
       minVersion: 'TLSv1.2',
       rejectUnauthorized: true,
       ...(config.caCertificate ? { ca: [config.caCertificate] } : {}),
-    },
+    } } : {}),
   };
 }
 

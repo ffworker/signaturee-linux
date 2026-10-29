@@ -187,6 +187,7 @@ export async function runTestCommand({
   if (!bindPassword || /[\r\n]/.test(bindPassword)) {
     throw new TestCliError('DIRECTORY_NOT_CONFIGURED', 'Test directory not configured');
   }
+  const allowInsecureTestLdap = options.envConfig && env.SIGNATUREE_ALLOW_INSECURE_TEST_LDAP === 'true';
   const caCertificate = env.SIGNATUREE_LDAP_CA_FILE
     ? await readFile(env.SIGNATUREE_LDAP_CA_FILE, 'utf8') : undefined;
   const backendDirectory = directoryFactory({
@@ -194,6 +195,7 @@ export async function runTestCommand({
     baseDN: env.SIGNATUREE_LDAP_BASE_DN,
     bindDN: env.SIGNATUREE_LDAP_BIND_DN,
     bindPassword,
+    allowInsecureTestLdap,
     ...(caCertificate ? { caCertificate } : {}),
   });
   // AD aliases/UPNs must not redirect an allowlisted request to an
