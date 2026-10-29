@@ -88,3 +88,29 @@ jobs:
           path: artifacts/integration/
           if-no-files-found: error
           retention-days: 7
+
+  container-smoke:
+    name: Docker — non-root, read-only real RTF smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Linux CLI with LibreOffice
+        run: docker build --pull -t signaturee-linux:test .
+      - name: Verify CLI and runtime as a restricted user (no network)
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --tmpfs /tmp:rw,nosuid,nodev,size=268435456 \
+            --memory 1g signaturee-linux:test --help
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --tmpfs /tmp:rw,nosuid,nodev,size=268435456 \
+            --memory 1g --entrypoint node signaturee-linux:test \
+            /app/scripts/container-smoke.js
+      - name: Validate Compose configuration without secrets or AD access
+        run: |
+          mkdir -p dev/templates dev/output
+          printf 'test' > dev/config.json
+          printf 'fake' > dev/ldap-bind-password
+          docker compose config --quiet

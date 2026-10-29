@@ -23,3 +23,6 @@ tmp/
 .DS_Store
 .idea/
 .vscode/
+
+# Local Compose test-AD config, secrets, certificates and generated output
+dev/
