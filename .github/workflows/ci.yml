@@ -19,6 +19,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Generate pinned lock metadata for this PR
+        run: |
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          echo 'SIGNATUREE_LOCK_BEGIN'
+          base64 -w0 package-lock.json
+          echo
+          echo 'SIGNATUREE_LOCK_END'
       - name: Check syntax
         run: npm run check
       - name: Run tests
