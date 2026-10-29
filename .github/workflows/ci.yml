@@ -27,6 +27,8 @@ jobs:
         run: npm run check
       - name: Run tests
         run: npm test
+      - name: Check test-AD CLI help without credentials
+        run: npm run test:cli:help
       - name: Generate synthetic HTML/TXT demo
         run: npm run demo
       - name: Upload HTML/TXT demo for visual inspection
