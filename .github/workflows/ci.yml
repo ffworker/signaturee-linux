@@ -23,3 +23,12 @@ jobs:
         run: npm run check
       - name: Run tests
         run: npm test
+      - name: Generate synthetic HTML/TXT demo
+        run: npm run demo
+      - name: Upload HTML/TXT demo for visual inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: signaturee-linux-html-txt-demo
+          path: artifacts/demo/
+          if-no-files-found: error
+          retention-days: 7
