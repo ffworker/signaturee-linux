@@ -29,13 +29,15 @@ export function parseTestArguments(args) {
   for (let i = 0; i < args.length; i++) {
     const flag = args[i];
     if (!['--config', '--user', '--signature', '--preview', '--generate',
-      '--ack-test-directory', '--ack-test-output'].includes(flag)) fail();
-    if (['--preview', '--generate', '--ack-test-directory', '--ack-test-output'].includes(flag)) {
+      '--ack-test-directory', '--ack-test-output', '--env-config'].includes(flag)) fail();
+    if (['--preview', '--generate', '--ack-test-directory', '--ack-test-output', '--env-config'].includes(flag)) {
       if (seen.has(flag)) fail();
       seen.add(flag);
       if (flag === '--preview' || flag === '--generate') {
         if (result.mode) fail();
         result.mode = flag.substring(2);
+      } else if (flag === '--env-config') {
+        result.envConfig = true;
       } else if (flag === '--ack-test-directory') {
         result.ackDirectory = true;
       } else {
@@ -53,7 +55,8 @@ export function parseTestArguments(args) {
       }
     }
   }
-  if (!result.configFile || !isAbsolute(result.configFile) ||
+  if ((Boolean(result.configFile) === Boolean(result.envConfig)) ||
+      (result.configFile && !isAbsolute(result.configFile)) ||
       !ACCOUNT.test(result.username ?? '') ||
       result.username.includes('..') ||
       result.signatures.length < 1 || result.signatures.length > 50 ||
@@ -106,9 +109,26 @@ export async function loadTestConfig(filePath) {
   return validateTestConfig(file);
 }
 
+export function loadEnvTestConfig(env) {
+  try {
+    const parse = (name) => JSON.parse(env[name]);
+    return validateTestConfig({
+      schema: 1,
+      allowedTestAccounts: parse('SIGNATUREE_ALLOWED_TEST_ACCOUNTS_JSON'),
+      templatesRoot: '/templates', outputRoot: '/output',
+      profiles: parse('SIGNATUREE_PROFILES_JSON'),
+      mappings: parse('SIGNATUREE_MAPPINGS_JSON'),
+      staticValues: env.SIGNATUREE_STATIC_VALUES_JSON ? parse('SIGNATUREE_STATIC_VALUES_JSON') : {},
+    });
+  } catch {
+    throw new TestCliError('INVALID_CONFIG', 'Invalid or missing environment test configuration');
+  }
+}
+
 export const TEST_CLI_HELP = [
   'Test-AD generator. This is not a public web server or a production deployment.',
   'Usage:',
+  '  --env-config --user test.user --signature HR --preview --ack-test-directory',
   '  node scripts/generate-test.js --config /absolute/test.json --user test.user',
   '    --signature HR [--signature SALES] --preview --ack-test-directory',
   '  node scripts/generate-test.js --config /absolute/test.json --user test.user',
@@ -135,7 +155,7 @@ export async function runTestCommand({
     log(TEST_CLI_HELP);
     return Object.freeze({ help: true });
   }
-  const config = await loadTestConfig(options.configFile);
+  const config = options.envConfig ? loadEnvTestConfig(env) : await loadTestConfig(options.configFile);
   if (!config.allowedTestAccounts.some(account =>
     account.toLowerCase() === options.username.toLowerCase())) {
     throw new TestCliError('TEST_USER_NOT_ALLOWED', 'Account is not in test allowlist');
