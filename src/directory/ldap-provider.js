@@ -29,14 +29,22 @@ export function validateDirectoryConfig(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     throw new TypeError('Directory configuration is required');
   }
-  const { url, baseDN, bindDN, bindPassword, caCertificate, timeoutMs = 8000 } = input;
+  const { url, baseDN, bindDN, bindPassword, caCertificate, allowInsecureLabLdap = false, timeoutMs = 8000 } = input;
   if (typeof url !== 'string') throw new TypeError('Directory URL is required');
   let parsed;
   try { parsed = new URL(url); } catch { throw new TypeError('Invalid directory URL'); }
-  if (parsed.protocol !== 'ldaps:' || !parsed.hostname || parsed.username ||
+  if (allowInsecureLabLdap !== false && allowInsecureLabLdap !== true) {
+    throw new TypeError('Invalid insecure lab LDAP opt-in');
+  }
+  const insecure = parsed.protocol === 'ldap:';
+  if ((insecure && !allowInsecureLabLdap) ||
+      (!insecure && parsed.protocol !== 'ldaps:') ||
+      (insecure && (parsed.port && parsed.port !== '389')) ||
+      (insecure && caCertificate !== undefined) ||
+      !parsed.hostname || parsed.username ||
       parsed.password || parsed.search || parsed.hash ||
       (parsed.pathname !== '' && parsed.pathname !== '/')) {
-    throw new TypeError('Directory URL must be an LDAPS host/port URL without credentials or paths');
+    throw new TypeError('Directory URL must use LDAPS unless insecure lab LDAP is explicitly enabled');
   }
   if (typeof baseDN !== 'string' || !baseDN.trim() ||
       baseDN.length > 512 || /[\x00\r\n]/.test(baseDN)) {
@@ -55,7 +63,7 @@ export function validateDirectoryConfig(input) {
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 30000) {
     throw new TypeError('Directory timeout must be between 1000 and 30000 ms');
   }
-  return Object.freeze({ url, baseDN, bindDN, bindPassword, caCertificate, timeoutMs });
+  return Object.freeze({ url, baseDN, bindDN, bindPassword, caCertificate, allowInsecureLabLdap, timeoutMs });
 }
 
 export function directoryClientOptions(config) {
@@ -64,11 +72,11 @@ export function directoryClientOptions(config) {
     timeout: config.timeoutMs,
     connectTimeout: config.timeoutMs,
     strictDN: true,
-    tlsOptions: {
+    ...(config.url.startsWith('ldaps:') ? { tlsOptions: {
       minVersion: 'TLSv1.2',
       rejectUnauthorized: true,
       ...(config.caCertificate ? { ca: [config.caCertificate] } : {}),
-    },
+    } } : {}),
   };
 }
 
