@@ -1,0 +1,19 @@
+{
+  "name": "signaturee-linux",
+  "version": "0.0.0-dev",
+  "private": true,
+  "type": "module",
+  "description": "Docker-first Linux email signature generator — foundation under development",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/core/selection.js && node --check test/core/selection.test.js"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ffworker/signaturee-linux.git"
+  }
+}

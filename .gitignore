@@ -1,0 +1,24 @@
+# Local secrets and private configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies, runtime state, outputs and generated files
+node_modules/
+coverage/
+dist/
+data/
+output/
+logs/
+tmp/
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# Tooling/editor
+.DS_Store
+.idea/
+.vscode/
