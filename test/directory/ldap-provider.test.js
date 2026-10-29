@@ -135,3 +135,15 @@ test('too many search results and invalid limits are rejected', async () => {
     { code: 'RESULT_LIMIT' });
   await assert.rejects(directory.searchUsers('Te', { limit: 51 }), { code: 'INVALID_LIMIT' });
 });
+
+test('plain LDAP requires explicit opt-in and never silently disables LDAPS certificate verification', () => {
+  const plain = { ...conf, url: 'ldap://dc.example.invalid:389' };
+  assert.throws(() => validateDirectoryConfig(plain), TypeError);
+  assert.throws(() => validateDirectoryConfig({ ...plain, allowInsecureLabLdap: 'true' }), TypeError);
+  assert.throws(() => validateDirectoryConfig({ ...plain, allowInsecureLabLdap: true, caCertificate: '-----BEGIN CERTIFICATE-----' }), TypeError);
+  assert.throws(() => validateDirectoryConfig({ ...plain, allowInsecureLabLdap: true, url: 'ldap://dc.example.invalid:1389' }), TypeError);
+  const opts = directoryClientOptions(validateDirectoryConfig({ ...plain, allowInsecureLabLdap: true }));
+  assert.equal(opts.url, plain.url);
+  assert.equal(Object.hasOwn(opts, 'tlsOptions'), false);
+  assert.equal(directoryClientOptions(validateDirectoryConfig({ ...conf, allowInsecureLabLdap: true })).tlsOptions.rejectUnauthorized, true);
+});
