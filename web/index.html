@@ -6,17 +6,17 @@
 <link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script>
 </head>
 <body><main>
-<header><div class="brand"><span class="mark">S/</span><div><strong>signaturee-linux</strong><small>LOCAL TEST CONSOLE</small></div></div><span class="badge">● OFFLINE · SYNTHETIC AD</span></header>
-<section class="hero"><p class="eyebrow">SIGNATURE ENGINE / TEST HARNESS</p><h1>Generate and inspect your <em>first Linux signature.</em></h1><p>Real template rendering, LibreOffice conversion and atomic snapshot publishing. The demo uses only synthetic bundled fixtures — no LDAP or production credentials.</p></section>
+<header><div class="brand"><span class="mark">S/</span><div><strong>signaturee-linux</strong><small>OFFLINE TEST CONSOLE</small></div></div><span class="badge">● OFFLINE · NO LDAP</span></header>
+<section class="hero"><p class="eyebrow">SIGNATURE ENGINE / TEST HARNESS</p><h1>Generate and inspect your <em>first Linux signature.</em></h1><p>Real template rendering, LibreOffice conversion and atomic snapshot publishing. Use bundled examples or your own admin-managed local templates with synthetic employee data. No LDAP or production credentials.</p></section>
 <section class="layout">
 <div class="panel"><div class="panelhead">01 / TEST IDENTITY <span>READ-ONLY</span></div>
 <div class="field"><label>Employee</label><div class="value">example.user <span>synthetic</span></div></div>
-<div class="field"><label>Authorized signature</label><div class="value">DEMO <span>Group: Signature-DEMO</span></div></div>
+<div class="field"><label>Authorized signature</label><div class="value"><strong id="profile-key">DEMO</strong> <span>Synthetic group mapping</span></div></div>
 <div class="actions"><button type="button" class="ghost" id="refresh">Refresh preview</button><button type="button" id="generate">Generate HTML / TXT / RTF</button></div>
 <p class="status" id="status" role="status" aria-live="polite">Loading demo preview…</p>
 <div id="downloads" class="downloads" hidden><p class="eyebrow">LATEST SNAPSHOT</p><code id="snapshot"></code>
-<div class="links"><a href="/api/download/htm" download="DEMO.htm">HTML ↓</a><a href="/api/download/txt" download="DEMO.txt">TXT ↓</a><a href="/api/download/rtf" download="DEMO.rtf">RTF ↓</a></div></div>
-<p class="warning">Offline demo only. No AD authentication, user selection, or deployment to Outlook/SMB.</p></div>
+<div class="links"><a href="/api/download/htm" download>HTML ↓</a><a href="/api/download/txt" download>TXT ↓</a><a href="/api/download/rtf" download>RTF ↓</a></div></div>
+<p class="warning">Local test modes only. No AD authentication, arbitrary user selection, or deployment to Outlook/SMB.</p></div>
 <div class="panel"><div class="panelhead">02 / RENDERED PREVIEW <span>HTML / TXT</span></div>
 <div class="preview"><iframe id="html-preview" title="Sandboxed HTML signature preview" sandbox="" referrerpolicy="no-referrer"></iframe></div><div class="texthead">PLAIN TEXT</div><pre id="text-preview">Loading…</pre>
 </div></section>

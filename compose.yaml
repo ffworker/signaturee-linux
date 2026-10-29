@@ -51,5 +51,34 @@ services:
     volumes:
       - signaturee-demo-output:/output:rw
 
+  # Local template workbench: NEVER consumes LDAP credentials.
+  # Mount admin-authored templates read-only and use only synthetic employee data.
+  signaturee-workbench:
+    profiles: ["workbench"]
+    build: .
+    image: signaturee-linux:offline-workbench
+    init: true
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 1g
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,mode=1777,size=268435456
+    entrypoint: ["node", "/app/scripts/workbench-web.js"]
+    environment:
+      SIGNATUREE_OFFLINE_PROFILE: ${SIGNATUREE_OFFLINE_PROFILE:-HR}
+      SIGNATUREE_OFFLINE_USER_JSON: ${SIGNATUREE_OFFLINE_USER_JSON:-}
+      SIGNATUREE_PROFILES_JSON: ${SIGNATUREE_PROFILES_JSON:-}
+      SIGNATUREE_STATIC_VALUES_JSON: ${SIGNATUREE_STATIC_VALUES_JSON:-}
+    ports:
+      - "127.0.0.1:8790:8789"
+    volumes:
+      - ./dev/templates:/templates:ro
+      - signaturee-workbench-output:/output:rw
+
 volumes:
   signaturee-demo-output:
+  signaturee-workbench-output:
