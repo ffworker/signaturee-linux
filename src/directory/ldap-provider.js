@@ -158,12 +158,15 @@ export function createDirectoryProvider(rawConfig, clientFactory = defaultClient
       client = await clientFactory(options);
       await client.bind(config.bindDN, config.bindPassword);
       return await work(client);
-    } catch {
+    } catch (error) {
+      if (error instanceof DirectoryError) throw error;
       // Do not leak driver messages, distinguished names or credentials in API
       // errors; observability can log only error category/correlation ID.
       throw new DirectoryError('DIRECTORY_UNAVAILABLE', 'Directory service unavailable');
     } finally {
-      if (client) await client.unbind().catch(() => {});
+      if (client) {
+        try { await client.unbind(); } catch { /* Close best-effort; never mask outcome. */ }
+      }
     }
   }
 
@@ -228,7 +231,9 @@ export function createDirectoryProvider(rawConfig, clientFactory = defaultClient
         if (isInvalidCredentials(error)) return null;
         throw new DirectoryError('DIRECTORY_UNAVAILABLE', 'Directory service unavailable');
       } finally {
-        if (client) await client.unbind().catch(() => {});
+        if (client) {
+        try { await client.unbind(); } catch { /* Close best-effort; never mask outcome. */ }
+      }
       }
     },
   });
