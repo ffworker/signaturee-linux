@@ -123,3 +123,29 @@ jobs:
           grep -q '"status":"generated"' /tmp/signaturee-generated.json
           curl -fsS http://127.0.0.1:8789/api/download/rtf -o /tmp/signaturee-demo.rtf
           head -c 6 /tmp/signaturee-demo.rtf | grep -qaF '{\rtf1'
+
+      - name: Test custom local templates through offline workbench (no LDAP)
+        run: |
+          mkdir -p dev/templates
+          printf '%s\n' '<html><body><p>$displayName / $footer</p></body></html>' > dev/templates/HR_Template.htm
+          printf '%s\n' '$displayName / $footer' > dev/templates/HR_Template.txt
+          docker compose --profile workbench up -d --build signaturee-workbench
+          trap 'docker compose --profile workbench logs signaturee-workbench; docker compose --profile workbench down --volumes' EXIT
+          ready=0
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8790/api/health > /tmp/signaturee-workbench-health.json; then ready=1; break; fi
+            sleep 1
+          done
+          test "$ready" = 1
+          grep -q '"mode":"offline-workbench"' /tmp/signaturee-workbench-health.json
+          curl -fsS http://127.0.0.1:8790/api/preview > /tmp/signaturee-workbench-preview.json
+          grep -q '"key":"HR"' /tmp/signaturee-workbench-preview.json
+          grep -q 'Alex Müller (Offline Test)' /tmp/signaturee-workbench-preview.json
+          curl -fsS -X POST -H 'Origin: http://127.0.0.1:8790' \
+            http://127.0.0.1:8790/api/generate > /tmp/signaturee-workbench-generated.json
+          grep -q '"key":"HR"' /tmp/signaturee-workbench-generated.json
+          curl -fsS http://127.0.0.1:8790/api/download/rtf -o /tmp/signaturee-workbench-hr.rtf
+          head -c 6 /tmp/signaturee-workbench-hr.rtf | grep -qaF '{\rtf1'
+          # The workbench may see offline demo fields, but MUST NOT receive the AD credentials.
+          container="$(docker compose --profile workbench ps -q signaturee-workbench)"
+          ! docker inspect "$container" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -q '^SIGNATUREE_LDAP_'
