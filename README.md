@@ -58,6 +58,16 @@ docker compose --profile demo up --build -d signaturee-demo
 
 Open **http://127.0.0.1:8789** on your Docker host to preview a bundled synthetic user's signature and generate/download real HTML, TXT and LibreOffice RTF output. No domain controller, LDAP credentials, or manual template setup is necessary. This is a **local-only, intentionally unauthenticated synthetic demo**, not a corporate UI. See [Offline browser demo](docs/offline-demo.md) for boundaries and cleanup instructions.
 
+### Preview your own templates without AD
+
+Put `HR_Template.htm` and `HR_Template.txt` into `dev/templates/`, select `SIGNATUREE_OFFLINE_PROFILE=HR` in `.env`, then run:
+
+```bash
+docker compose --profile workbench up --build -d signaturee-workbench
+```
+
+Open **http://127.0.0.1:8790/** on the Docker host. This local-only workbench uses only synthetic user attributes and the configured read-only local template; it never connects to LDAP. See [Offline template workbench](docs/offline-workbench.md).
+
 ### Configure your test AD with a single .env file
 
 Copy `.env.example` to `.env`, edit LDAPS, allowlisted account, profile and group mapping, then run the Docker CLI. See [env-only quickstart](docs/env-quickstart.md). This convenience mode exposes the **test-only** bind password in container environment metadata; never use a privileged or production service account.
