@@ -233,8 +233,8 @@ export function createDirectoryProvider(rawConfig, clientFactory = defaultClient
         throw new DirectoryError('DIRECTORY_UNAVAILABLE', 'Directory service unavailable');
       } finally {
         if (client) {
-        try { await client.unbind(); } catch { /* Close best-effort; never mask outcome. */ }
-      }
+          try { await client.unbind(); } catch { /* Close best-effort; never mask outcome. */ }
+        }
       }
     },
   });
