@@ -41,11 +41,11 @@ versioning**. It does not change the Windows release branch or require a monorep
 - [x] LDAP lookup and authentication (native provider + mocked tests; real test AD pending)
 - [ ] HTML/TXT renderer and anonymized golden fixtures (core preview in PR #2; production integration pending)
 - [ ] Headless LibreOffice RTF converter (experimental converter in PR #5; production publishing pending)
-- [ ] Safe output publisher
+- [ ] Safe output publisher (write-once atomic snapshots in PR #6; stable production paths pending)
 - [ ] Web UI and API
 - [ ] Dockerfile, Compose and end-to-end Outlook acceptance
 
-See [Architecture](docs/architecture.md), [RTF conversion](docs/rtf.md), [Milestones](docs/milestones.md),
+See [Architecture](docs/architecture.md), [Publishing](docs/publishing.md), [RTF conversion](docs/rtf.md), [Milestones](docs/milestones.md),
 [How to test](docs/testing.md) and [the real test-AD LDAPS probe](docs/test-ldaps.md).
 
 ### Try the renderer before LDAP or Docker

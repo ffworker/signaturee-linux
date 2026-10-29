@@ -109,3 +109,19 @@ test('missing root is not automatically created', async t => {
   }), { code: 'INVALID_ROOT' });
   assert.deepEqual((await readdir(base)).sort(), ['output']);
 });
+
+
+test('stage is removed when writing a later asset fails after earlier files exist', async t => {
+  const { root } = await sandbox(t);
+  // Both input paths pass syntax checks, but a file cannot also be a folder.
+  const inconsistentAssets = [
+    { path: 'HR-Dateien/a.png', bytes: Buffer.from('one') },
+    { path: 'HR-Dateien/a.png/b.png', bytes: Buffer.from('two') },
+  ];
+  await assert.rejects(publishSignatureSnapshot({
+    rootDirectory: root,
+    accountName: 'test.user',
+    signatures: [{ ...sample(), assets: inconsistentAssets }],
+  }), { code: 'PUBLISH_FAILED' });
+  assert.deepEqual(await readdir(root), [], 'no snapshot or leftover private stage');
+});
