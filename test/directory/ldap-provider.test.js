@@ -141,6 +141,30 @@ test('ambiguous identity and LDAP outages must fail closed without leaking a sec
   });
 });
 
+test('directory errors expose safe categories without leaking driver messages', async () => {
+  const failures = [
+    ['ETIMEDOUT', 'DIRECTORY_TIMEOUT'],
+    ['ENOTFOUND', 'DIRECTORY_DNS_FAILED'],
+    ['EAI_AGAIN', 'DIRECTORY_DNS_FAILED'],
+    ['ECONNREFUSED', 'DIRECTORY_PORT_UNREACHABLE'],
+    [49, 'DIRECTORY_BIND_REJECTED'],
+    [8, 'DIRECTORY_BIND_REJECTED'],
+    ['UNKNOWN', 'DIRECTORY_UNAVAILABLE'],
+  ];
+  for (const [code, expected] of failures) {
+    const error = Object.assign(new Error('SECRET ' + conf.bindPassword), { code });
+    const directory = createDirectoryProvider(conf, fakeDirectory({
+      serviceBindError: error,
+    }).factory);
+    await assert.rejects(directory.getUser('test.user'), failure => {
+      assert.equal(failure.code, expected);
+      assert.equal(failure.message.includes(conf.bindPassword), false);
+      assert.equal(failure.message.includes('SECRET'), false);
+      return true;
+    });
+  }
+});
+
 test('too many search results and invalid limits are rejected', async () => {
   const directory = createDirectoryProvider(conf, fakeDirectory({ entries: [member, member] }).factory);
   await assert.rejects(directory.searchUsers('Te', { limit: 1 }),
