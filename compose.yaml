@@ -28,3 +28,28 @@ services:
       SIGNATUREE_MAPPINGS_JSON: ${SIGNATUREE_MAPPINGS_JSON:-}
       SIGNATUREE_STATIC_VALUES_JSON: ${SIGNATUREE_STATIC_VALUES_JSON:-}
     command: ["--help"]
+
+  # Explicitly opt in: docker compose --profile demo up --build -d signaturee-demo
+  # NO real LDAP credentials, no AD lookup, no shared/public network port.
+  signaturee-demo:
+    profiles: ["demo"]
+    build: .
+    image: signaturee-linux:offline-demo
+    init: true
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 1g
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,mode=1777,size=268435456
+    entrypoint: ["node", "/app/scripts/demo-web.js"]
+    ports:
+      - "127.0.0.1:8789:8789"
+    volumes:
+      - signaturee-demo-output:/output:rw
+
+volumes:
+  signaturee-demo-output:

@@ -15,6 +15,9 @@ RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund \
     && npm cache clean --force
 COPY src ./src
 COPY scripts ./scripts
+COPY test/fixtures/demo ./test/fixtures/demo
+COPY web ./web
+RUN mkdir -p /output && chown 10001:10001 /output
 USER 10001:10001
 ENTRYPOINT ["node", "/app/scripts/generate-signatures.js"]
 CMD ["--help"]

@@ -104,3 +104,22 @@ jobs:
           docker compose config --quiet
           docker compose run --rm signaturee-test --env-config --user test.user --signature HR --preview --ack-test-directory >/tmp/signaturee-env-smoke.log 2>&1 && exit 1 || true
           grep -q 'FAIL:' /tmp/signaturee-env-smoke.log
+
+      - name: Run real offline browser demo (no LDAP) and download RTF
+        run: |
+          docker compose --profile demo up -d --build signaturee-demo
+          trap 'docker compose --profile demo logs signaturee-demo; docker compose --profile demo down --volumes' EXIT
+          ready=0
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8789/api/health >/tmp/signaturee-health.json; then ready=1; break; fi
+            sleep 1
+          done
+          test "$ready" = 1
+          grep -q '"ldap":false' /tmp/signaturee-health.json
+          curl -fsS http://127.0.0.1:8789/api/preview >/tmp/signaturee-preview.json
+          grep -q '"accountName":"example.user"' /tmp/signaturee-preview.json
+          curl -fsS -X POST -H 'Origin: http://127.0.0.1:8789' \
+            http://127.0.0.1:8789/api/generate >/tmp/signaturee-generated.json
+          grep -q '"status":"generated"' /tmp/signaturee-generated.json
+          curl -fsS http://127.0.0.1:8789/api/download/rtf -o /tmp/signaturee-demo.rtf
+          head -c 6 /tmp/signaturee-demo.rtf | grep -qaF '{\rtf1'

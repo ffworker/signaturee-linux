@@ -42,12 +42,21 @@ versioning**. It does not change the Windows release branch or require a monorep
 - [x] HTML/TXT renderer and synthetic fixtures (real AD acceptance pending)
 - [x] Headless LibreOffice RTF converter (real conversion tested in CI; Outlook acceptance pending)
 - [x] Safe experimental output publisher (write-once snapshots; stable production paths pending)
-- [ ] Web UI and API
+- [x] Localhost-only offline browser demo UI/API (synthetic data, NOT AD-authenticated)
+- [ ] Authenticated production web UI and API
 - [x] Non-root Docker CLI and offline synthetic end-to-end smoke in CI
 - [ ] Real test-AD acceptance, stable Outlook paths, SMB deployment and Classic Outlook compatibility
 
 See [Docker test CLI](docs/docker-test.md), [Test-AD generation CLI](docs/test-cli.md), [Trusted template loader](docs/template-catalog.md), [End-to-end synthetic pipeline](docs/integration.md), [Architecture](docs/architecture.md), [Publishing](docs/publishing.md), [RTF conversion](docs/rtf.md), [Milestones](docs/milestones.md),
 [How to test](docs/testing.md) and [the real test-AD LDAPS probe](docs/test-ldaps.md).
+
+### Test the browser UI offline — no AD needed
+
+```bash
+docker compose --profile demo up --build -d signaturee-demo
+```
+
+Open **http://127.0.0.1:8789** on your Docker host to preview a bundled synthetic user's signature and generate/download real HTML, TXT and LibreOffice RTF output. No domain controller, LDAP credentials, or manual template setup is necessary. This is a **local-only, intentionally unauthenticated synthetic demo**, not a corporate UI. See [Offline browser demo](docs/offline-demo.md) for boundaries and cleanup instructions.
 
 ### Configure your test AD with a single .env file
 
