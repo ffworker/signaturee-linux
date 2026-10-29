@@ -95,19 +95,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Build Linux CLI with LibreOffice
-        run: docker build --pull -t signaturee-linux:test .
-      - name: Verify CLI and runtime as a restricted user (no network)
-        run: |
-          docker run --rm --network none --read-only --cap-drop ALL \
-            --security-opt no-new-privileges \
-            --tmpfs /tmp:rw,nosuid,nodev,size=268435456 \
-            --memory 1g signaturee-linux:test --help
-          docker run --rm --network none --read-only --cap-drop ALL \
-            --security-opt no-new-privileges \
-            --tmpfs /tmp:rw,nosuid,nodev,size=268435456 \
-            --memory 1g --entrypoint node signaturee-linux:test \
-            /app/scripts/container-smoke.js
+      - name: Reproduce real-machine offline acceptance (no network)
+        run: bash scripts/verify-docker.sh
       - name: Validate Compose configuration without secrets or AD access
         run: |
           mkdir -p dev/templates dev/output
