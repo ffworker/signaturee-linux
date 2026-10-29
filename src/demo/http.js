@@ -147,9 +147,27 @@ export function createOfflineDemoServer({
           DOWNLOADS[ext]);
       }
       return error(res, 404, 'Not found');
-    })().catch(() => {
-      if (!res.headersSent) error(res, 500, 'Demo operation failed');
-      else res.destroy();
+    })().catch(err => {
+      if (!res.headersSent) {
+        // Only known, fixed codes and admin-declared relative filenames.
+        // Never forward raw exceptions, paths, credentials or template content.
+        const safeCodes = new Set([
+          'TEMPLATE_UNAVAILABLE', 'INVALID_TEMPLATE_ROOT', 'INVALID_TEMPLATE_ENCODING',
+          'INVALID_TEMPLATE', 'INVALID_CATALOG', 'MISSING_VARIABLE',
+          'INVALID_VARIABLE', 'SELECTION_NOT_AUTHORIZED',
+        ]);
+        if (safeCodes.has(err?.code)) {
+          const file = typeof err.filename === 'string' &&
+            /^(?:[A-Za-z0-9_-]+_Template\\.(?:htm|txt)|[A-Za-z0-9_-]+-Dateien\\/[\\p{L}\\p{N} _().\\/-]+)$/u.test(err.filename)
+            ? err.filename : undefined;
+          return send(res, 422, {
+            error: 'Offline template validation failed',
+            code: err.code,
+            ...(file ? { file } : {}),
+          });
+        }
+        error(res, 500, 'Demo operation failed');
+      } else res.destroy();
     });
   });
 }
