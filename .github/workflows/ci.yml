@@ -19,13 +19,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Generate pinned lock metadata for this PR
-        run: |
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-          echo 'SIGNATUREE_LOCK_BEGIN'
-          base64 -w0 package-lock.json
-          echo
-          echo 'SIGNATUREE_LOCK_END'
+      - name: Install pinned production dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify native LDAP dependency loads
+        run: node -e "import('ldapts').then(m => { if (typeof m.Client !== 'function') process.exit(1); })"
       - name: Check syntax
         run: npm run check
       - name: Run tests
