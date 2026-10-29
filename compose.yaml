@@ -17,6 +17,7 @@ services:
       - ./dev/templates:/templates:ro
       - ./dev/output:/output:rw
     environment:
+      SIGNATUREE_ALLOW_INSECURE_LAB_LDAP: ${SIGNATUREE_ALLOW_INSECURE_LAB_LDAP:-false}
       SIGNATUREE_LDAP_URL: ${SIGNATUREE_LDAP_URL:-}
       SIGNATUREE_LDAP_BASE_DN: ${SIGNATUREE_LDAP_BASE_DN:-}
       SIGNATUREE_LDAP_BIND_DN: ${SIGNATUREE_LDAP_BIND_DN:-}
