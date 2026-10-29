@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/core/selection.js && node --check test/core/selection.test.js"
+    "check": "node --check src/core/selection.js && node --check src/core/render.js && node --check src/core/template-encoding.js && node --check scripts/demo-render.js && node --check test/core/render.test.js",
+    "demo": "node scripts/demo-render.js"
   },
   "license": "MIT",
   "repository": {

@@ -37,15 +37,30 @@ versioning**. It does not change the Windows release branch or require a monorep
 
 ## Progress
 
-- [ ] Foundational contracts and tests
+- [x] Foundational contracts and tests
 - [ ] LDAP lookup and authentication
-- [ ] HTML/TXT renderer and anonymized golden fixtures
+- [ ] HTML/TXT renderer and anonymized golden fixtures (core preview in PR #2; production integration pending)
 - [ ] Headless LibreOffice RTF converter
 - [ ] Safe output publisher
 - [ ] Web UI and API
 - [ ] Dockerfile, Compose and end-to-end Outlook acceptance
 
-See [Architecture](docs/architecture.md) and [Milestones](docs/milestones.md) when added.
+See [Architecture](docs/architecture.md), [Milestones](docs/milestones.md), and
+[How to test](docs/testing.md).
+
+### Try the renderer before LDAP or Docker
+
+On the renderer feature branch (until merged), with **Node.js 24+**:
+
+```bash
+npm run check
+npm test
+npm run demo
+```
+
+Open `artifacts/demo/DEMO.htm` to see a signature rendered with **synthetic**
+data and a dummy image. GitHub Actions also offers a downloadable demo artifact.
+This preview does **not** yet contain LDAP, LibreOffice/RTF, or a functional web UI.
 
 ## Windows edition
 
