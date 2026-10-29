@@ -115,6 +115,7 @@ export const TEST_CLI_HELP = [
   '    --signature HR --generate --ack-test-directory --ack-test-output',
   'Environment: SIGNATUREE_LDAP_URL, _BASE_DN, _BIND_DN, _BIND_PASSWORD',
   'Optional: SIGNATUREE_LDAP_CA_FILE (PEM CA certificate)',
+  'Docker: use SIGNATUREE_LDAP_BIND_PASSWORD_FILE as a mounted secret (instead of password env)',
 ].join('\n');
 
 /**
@@ -140,7 +141,30 @@ export async function runTestCommand({
     throw new TestCliError('TEST_USER_NOT_ALLOWED', 'Account is not in test allowlist');
   }
   if (!env.SIGNATUREE_LDAP_URL || !env.SIGNATUREE_LDAP_BASE_DN ||
-      !env.SIGNATUREE_LDAP_BIND_DN || !env.SIGNATUREE_LDAP_BIND_PASSWORD) {
+      !env.SIGNATUREE_LDAP_BIND_DN) {
+    throw new TestCliError('DIRECTORY_NOT_CONFIGURED', 'Test directory not configured');
+  }
+  if (env.SIGNATUREE_LDAP_BIND_PASSWORD &&
+      env.SIGNATUREE_LDAP_BIND_PASSWORD_FILE) {
+    throw new TestCliError('DIRECTORY_NOT_CONFIGURED', 'Use only one LDAP secret source');
+  }
+  let bindPassword = env.SIGNATUREE_LDAP_BIND_PASSWORD;
+  if (env.SIGNATUREE_LDAP_BIND_PASSWORD_FILE) {
+    const secretPath = env.SIGNATUREE_LDAP_BIND_PASSWORD_FILE;
+    try {
+      if (!isAbsolute(secretPath)) throw Error('Non-absolute secret path');
+      const stat = await lstat(secretPath);
+      if (!stat.isFile() || stat.isSymbolicLink() ||
+          stat.size < 1 || stat.size > 16_384 ||
+          await realpath(secretPath) !== resolve(secretPath)) {
+        throw Error('Unsafe secret file');
+      }
+      bindPassword = (await readFile(secretPath, 'utf8')).replace(/\\r?\\n$/, '');
+    } catch {
+      throw new TestCliError('DIRECTORY_NOT_CONFIGURED', 'Invalid LDAP secret file');
+    }
+  }
+  if (!bindPassword || /[\\r\\n]/.test(bindPassword)) {
     throw new TestCliError('DIRECTORY_NOT_CONFIGURED', 'Test directory not configured');
   }
   const caCertificate = env.SIGNATUREE_LDAP_CA_FILE
@@ -149,7 +173,7 @@ export async function runTestCommand({
     url: env.SIGNATUREE_LDAP_URL,
     baseDN: env.SIGNATUREE_LDAP_BASE_DN,
     bindDN: env.SIGNATUREE_LDAP_BIND_DN,
-    bindPassword: env.SIGNATUREE_LDAP_BIND_PASSWORD,
+    bindPassword,
     ...(caCertificate ? { caCertificate } : {}),
   });
   // AD aliases/UPNs must not redirect an allowlisted request to an
