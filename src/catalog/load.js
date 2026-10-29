@@ -4,10 +4,12 @@ import { isAbsolute, join, resolve, sep } from 'node:path';
 import { decodeTemplate } from '../core/template-encoding.js';
 
 export class TemplateCatalogError extends Error {
-  constructor(code, message) {
+  constructor(code, message, filename = null) {
     super(message);
     this.name = 'TemplateCatalogError';
     this.code = code;
+    // Only server-declared relative catalog names, never absolute host paths.
+    this.filename = filename;
   }
 }
 
@@ -94,7 +96,7 @@ async function readBoundedFile(root, parts, maxBytes) {
     return bytes;
   } catch {
     throw new TemplateCatalogError('TEMPLATE_UNAVAILABLE',
-      'Template file is missing, unsafe or too large');
+      'Template file is missing, unsafe or too large', parts.join('/'));
   } finally {
     if (handle) await handle.close();
   }
