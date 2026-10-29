@@ -2,7 +2,7 @@
 
 **A fresh, Docker-first email signature generator for Linux.**
 
-> **Status: early development.** No usable application, Docker image, or Linux release exists yet.
+> **Status: experimental Docker test CLI (not a production release).** Offline synthetic signature generation with real LibreOffice is implemented and checked in CI. Test AD integration, Outlook output and production deployment are not yet validated.
 
 Signaturee Linux is a new implementation informed by the lessons learned from
 [Signaturee for Windows v2.0.0](https://github.com/ffworker/Signaturee-public/releases/tag/v2.0.0),
@@ -39,28 +39,27 @@ versioning**. It does not change the Windows release branch or require a monorep
 
 - [x] Foundational contracts and tests
 - [x] LDAP lookup and authentication (native provider + mocked tests; real test AD pending)
-- [ ] HTML/TXT renderer and anonymized golden fixtures (core preview in PR #2; production integration pending)
-- [ ] Headless LibreOffice RTF converter (experimental converter in PR #5; production publishing pending)
-- [ ] Safe output publisher (write-once atomic snapshots in PR #6; stable production paths pending)
+- [x] HTML/TXT renderer and synthetic fixtures (real AD acceptance pending)
+- [x] Headless LibreOffice RTF converter (real conversion tested in CI; Outlook acceptance pending)
+- [x] Safe experimental output publisher (write-once snapshots; stable production paths pending)
 - [ ] Web UI and API
-- [ ] Dockerfile, Compose and end-to-end Outlook acceptance
+- [x] Non-root Docker CLI and offline synthetic end-to-end smoke in CI
+- [ ] Real test-AD acceptance, stable Outlook paths, SMB deployment and Classic Outlook compatibility
 
 See [Docker test CLI](docs/docker-test.md), [Test-AD generation CLI](docs/test-cli.md), [Trusted template loader](docs/template-catalog.md), [End-to-end synthetic pipeline](docs/integration.md), [Architecture](docs/architecture.md), [Publishing](docs/publishing.md), [RTF conversion](docs/rtf.md), [Milestones](docs/milestones.md),
 [How to test](docs/testing.md) and [the real test-AD LDAPS probe](docs/test-ldaps.md).
 
-### Try the renderer before LDAP or Docker
+### Test Docker on a Linux machine (no AD credentials)
 
-On the renderer feature branch (until merged), with **Node.js 24+**:
+With Docker Engine installed and the current main branch checked out:
 
 ```bash
-npm run check
-npm test
-npm run demo
+git clone https://github.com/ffworker/signaturee-linux.git
+cd signaturee-linux
+bash scripts/verify-docker.sh
 ```
 
-Open `artifacts/demo/DEMO.htm` to see a signature rendered with **synthetic**
-data and a dummy image. GitHub Actions also offers a downloadable demo artifact.
-This preview does **not** yet contain LDAP, LibreOffice/RTF, or a functional web UI.
+This builds the image and performs restricted, network-disabled HTML/TXT/RTF generation with LibreOffice and an atomic snapshot using synthetic data. It is the same acceptance command executed in CI. It does **not** connect to LDAP, publish to SMB or establish Classic Outlook layout compatibility. See [Docker test CLI](docs/docker-test.md) for a separate optional isolated test-AD setup.
 
 ## Windows edition
 
