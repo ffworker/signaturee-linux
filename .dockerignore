@@ -5,3 +5,9 @@
 !src/**
 !scripts/
 !scripts/**
+!test/
+!test/fixtures/
+!test/fixtures/demo/
+!test/fixtures/demo/**
+!web/
+!web/**
