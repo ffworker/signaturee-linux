@@ -25,3 +25,20 @@ docker compose run --rm signaturee-test --env-config --user test.user --signatur
 The snapshot is saved under `dev/output`. No AD modifications, stable Outlook paths or production SMB publishing occur. The CLI still enforces explicit test-account allowlisting, exact direct-group membership, and acknowledgment flags.
 
 **Security:** Putting a bind password in `.env` is convenient for an isolated disposable test account but exposes it in Docker container metadata (`docker inspect`), to Docker administrators, and potentially via `docker compose config`. Do not commit `.env`, paste its contents in tickets or screenshots, or use a production account. For production we will return to a mounted secret. `docker compose config --quiet` validates Compose without printing resolved secrets.
+
+## Safe directory diagnostics
+
+The CLI prints only a fixed error category, never LDAP driver exception
+messages, domain credentials or employee attributes:
+
+| Error | What to check |
+| --- | --- |
+| `DIRECTORY_DNS_FAILED` | DC name resolution inside Docker |
+| `DIRECTORY_TIMEOUT` | Routing/firewall, VPN/Wi-Fi access to the DC port |
+| `DIRECTORY_PORT_UNREACHABLE` | DC listener, chosen TCP port |
+| `DIRECTORY_BIND_REJECTED` | Test service account credentials; AD LDAP bind/security policy |
+| `DIRECTORY_UNAVAILABLE` | Other LDAP bind/search/driver issue |
+
+These categories are best-effort, based on known transport codes. A generic
+`DIRECTORY_UNAVAILABLE` can still occur if the library supplies a different
+error code. **Do not disable TLS verification** to troubleshoot secure LDAP.
