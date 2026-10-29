@@ -10,6 +10,8 @@ release exists until the end-to-end workflow passes against a test AD and Classi
    Ensure no source contains real employees or company logos.
 3. **M2 — Secure directory integration:** Native LDAP search/login, direct group mapping,
    enabled-user policy and normalized attributes, all with TLS and mock tests.
+   **Status:** Native provider and mock-backed rendering bridge implemented; a read-only
+   real test-AD LDAPS probe is available. Real-world AD validation remains outstanding.
 4. **M3 — Converter and publisher:** Headless LibreOffice with isolated profile, timeout,
    RTF validation and atomic publish; mounted output and no accidental ACL escalation.
 5. **M4 — API and UI:** Use a compatible subset of the existing Signaturee frontend,
