@@ -40,10 +40,24 @@ test('offline UI serves only synthetic data and no credential fields', async t =
   assert.equal(page.status, 200);
   assert.match(await page.text(), /Offline Demo/);
   assert.match(page.headers.get('content-security-policy'), /default-src 'none'/);
+  // Browser cache-busters/tracking on static routes must not block the app.
+  const queryPage = await fetch(base + '/?source=bookmark&v=2');
+  assert.equal(queryPage.status, 200);
+  assert.match(await queryPage.text(), /Offline Demo/);
+  const script = await fetch(base + '/app.js?v=2');
+  assert.equal(script.status, 200);
+  assert.match(await script.text(), /async function refresh/);
+  const cachePreview = await fetch(base + '/api/preview?_=123');
+  assert.equal(cachePreview.status, 200);
+  assert.equal((await cachePreview.json()).accountName, 'example.user');
 });
 test('offline API rejects arbitrary selection, request bodies and forged origin', async t => {
   const { base } = await start(t);
   assert.equal((await fetch(base + '/api/preview?user=administrator')).status, 400);
+  assert.equal((await fetch(base + '/api/preview?v=1&key=admin')).status, 400);
+  assert.equal((await fetch(base + '/api/generate?_=123', {
+    method: 'POST', headers: { Origin: base },
+  })).status, 400);
   assert.equal((await fetch(base + '/api/download/rtf')).status, 404);
   assert.equal((await fetch(base + '/api/generate', { method: 'POST', headers: {
     Origin: 'https://evil.example',
