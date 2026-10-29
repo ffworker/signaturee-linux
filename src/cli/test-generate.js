@@ -194,6 +194,8 @@ export async function runTestCommand({
     baseDN: env.SIGNATUREE_LDAP_BASE_DN,
     bindDN: env.SIGNATUREE_LDAP_BIND_DN,
     bindPassword,
+    // Only the env-based test CLI can enable unencrypted LDAP.
+    allowInsecureLabLdap: options.envConfig && env.SIGNATUREE_ALLOW_INSECURE_LAB_LDAP === 'true',
     ...(caCertificate ? { caCertificate } : {}),
   });
   // AD aliases/UPNs must not redirect an allowlisted request to an
