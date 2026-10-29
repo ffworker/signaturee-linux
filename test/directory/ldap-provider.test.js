@@ -118,7 +118,7 @@ test('no matching users cannot be authenticated and no additional bind occurs', 
 test('ambiguous identity and LDAP outages must fail closed without leaking a secret', async () => {
   const ambiguous = createDirectoryProvider(conf, fakeDirectory({ entries: [member, member] }).factory);
   await assert.rejects(ambiguous.authenticate('test.user', 'secret'),
-    { code: 'DIRECTORY_UNAVAILABLE', message: 'Directory service unavailable' });
+    { code: 'AMBIGUOUS_IDENTITY', message: 'Multiple directory identities matched' });
   const failing = createDirectoryProvider(conf, fakeDirectory({
     serviceBindError: new Error('Secret: ' + conf.bindPassword),
   }).factory);
@@ -132,6 +132,6 @@ test('ambiguous identity and LDAP outages must fail closed without leaking a sec
 test('too many search results and invalid limits are rejected', async () => {
   const directory = createDirectoryProvider(conf, fakeDirectory({ entries: [member, member] }).factory);
   await assert.rejects(directory.searchUsers('Te', { limit: 1 }),
-    { code: 'DIRECTORY_UNAVAILABLE' });
+    { code: 'RESULT_LIMIT' });
   await assert.rejects(directory.searchUsers('Te', { limit: 51 }), { code: 'INVALID_LIMIT' });
 });
