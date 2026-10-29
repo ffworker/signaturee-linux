@@ -3,6 +3,18 @@
 **This is a containerized, one-shot test-AD generator – not a web server,
 production signature deployment or stable release.** No ports are published.
 
+## One-command offline acceptance on a Linux Docker host
+
+~~~bash
+git clone https://github.com/ffworker/signaturee-linux.git
+cd signaturee-linux
+bash scripts/verify-docker.sh
+~~~
+
+Requires a working Docker Engine and permission to run Docker commands. It builds the local image, enforces an unprivileged UID, disables networking, runs the CLI and performs **real LibreOffice RTF conversion plus atomic snapshot publishing using synthetic data**. This is also the CI acceptance command. It uses **no AD credentials, live LDAP connection or SMB share** and prints PASS only if every check succeeds.
+
+**Do not confuse this PASS with real-AD or Outlook acceptance.** See the test-AD procedure below for the next validation step.
+
 ## Build and offline smoke test
 
 On a Docker-capable Linux machine (no LDAP credentials required):
