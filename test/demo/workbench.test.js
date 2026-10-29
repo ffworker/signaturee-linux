@@ -61,6 +61,8 @@ test('workbench rejects mismatched keys, unsafe user data, and missing template 
   await assert.rejects(loadLocalWorkbench({
     ...base, env: { ...environment, SIGNATUREE_OFFLINE_USER_JSON: '{"title":"bad\\nnewline"}' },
   }), /Invalid offline user attribute/);
+  // Ensure only the HTML file is missing; parallel reads have no ordering contract.
+  await writeFile(join(templates, 'MISSING_Template.txt'), 'Sample');
   await assert.rejects(loadLocalWorkbench({
     ...base, env: { ...environment, SIGNATUREE_PROFILES_JSON: '[{"key":"MISSING"}]', SIGNATUREE_OFFLINE_PROFILE: 'MISSING' },
   }), { code: 'TEMPLATE_UNAVAILABLE', filename: 'MISSING_Template.htm' });
