@@ -38,15 +38,15 @@ versioning**. It does not change the Windows release branch or require a monorep
 ## Progress
 
 - [x] Foundational contracts and tests
-- [ ] LDAP lookup and authentication
+- [x] LDAP lookup and authentication (native provider + mocked tests; real test AD pending)
 - [ ] HTML/TXT renderer and anonymized golden fixtures (core preview in PR #2; production integration pending)
 - [ ] Headless LibreOffice RTF converter
 - [ ] Safe output publisher
 - [ ] Web UI and API
 - [ ] Dockerfile, Compose and end-to-end Outlook acceptance
 
-See [Architecture](docs/architecture.md), [Milestones](docs/milestones.md), and
-[How to test](docs/testing.md).
+See [Architecture](docs/architecture.md), [Milestones](docs/milestones.md),
+[How to test](docs/testing.md) and [the real test-AD LDAPS probe](docs/test-ldaps.md).
 
 ### Try the renderer before LDAP or Docker
 

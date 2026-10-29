@@ -9,8 +9,9 @@
   },
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/core/selection.js && node --check src/core/render.js && node --check src/core/template-encoding.js && node --check scripts/demo-render.js && node --check test/core/render.test.js && node --check src/directory/ldap-provider.js && node --check test/directory/ldap-provider.test.js",
-    "demo": "node scripts/demo-render.js"
+    "check": "node --check src/core/selection.js && node --check src/core/render.js && node --check src/core/template-encoding.js && node --check scripts/demo-render.js && node --check test/core/render.test.js && node --check src/directory/ldap-provider.js && node --check test/directory/ldap-provider.test.js && node --check src/core/assignments.js && node --check src/core/preview.js && node --check scripts/ldap-probe.js && node --check test/integration/preview.test.js",
+    "demo": "node scripts/demo-render.js",
+    "ldap:probe": "node scripts/ldap-probe.js"
   },
   "license": "MIT",
   "repository": {
