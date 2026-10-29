@@ -149,6 +149,30 @@ function isInvalidCredentials(error) {
 }
 
 /**
+ * Stable diagnostic categories only. Never surface raw driver messages:
+ * those can contain distinguished names, directory contents, or secrets.
+ */
+function safeDirectoryFailure(error, stage = 'query') {
+  if (error instanceof DirectoryError) return error;
+  const code = error?.code;
+  if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') {
+    return new DirectoryError('DIRECTORY_DNS_FAILED', 'Directory hostname could not be resolved');
+  }
+  if (code === 'ETIMEDOUT' || code === 'ETIMEOUT' ||
+      code === 'ESOCKETTIMEDOUT' || error?.name === 'TimeoutError') {
+    return new DirectoryError('DIRECTORY_TIMEOUT', 'Directory connection timed out');
+  }
+  if (code === 'ECONNREFUSED') {
+    return new DirectoryError('DIRECTORY_PORT_UNREACHABLE', 'Directory port refused connection');
+  }
+  if (stage === 'service-bind' && (isInvalidCredentials(error) ||
+      code === 8 || code === '8')) {
+    return new DirectoryError('DIRECTORY_BIND_REJECTED', 'Directory service bind rejected');
+  }
+  return new DirectoryError('DIRECTORY_UNAVAILABLE', 'Directory service unavailable');
+}
+
+/**
  * All operations bind with a dedicated read-only service identity, not an
  * administrator password. Login verifies a user via a separate user bind.
  */
@@ -159,15 +183,15 @@ export function createDirectoryProvider(rawConfig, clientFactory = defaultClient
 
   async function withServiceClient(work) {
     let client;
+    let stage = 'connect';
     try {
       client = await clientFactory(options);
+      stage = 'service-bind';
       await client.bind(config.bindDN, config.bindPassword);
+      stage = 'query';
       return await work(client);
     } catch (error) {
-      if (error instanceof DirectoryError) throw error;
-      // Do not leak driver messages, distinguished names or credentials in API
-      // errors; observability can log only error category/correlation ID.
-      throw new DirectoryError('DIRECTORY_UNAVAILABLE', 'Directory service unavailable');
+      throw safeDirectoryFailure(error, stage);
     } finally {
       if (client) {
         try { await client.unbind(); } catch { /* Close best-effort; never mask outcome. */ }
@@ -234,7 +258,7 @@ export function createDirectoryProvider(rawConfig, clientFactory = defaultClient
         return user;
       } catch (error) {
         if (isInvalidCredentials(error)) return null;
-        throw new DirectoryError('DIRECTORY_UNAVAILABLE', 'Directory service unavailable');
+        throw safeDirectoryFailure(error, 'user-bind');
       } finally {
         if (client) {
           try { await client.unbind(); } catch { /* Close best-effort; never mask outcome. */ }
