@@ -60,7 +60,20 @@ export function createOfflineDemoServer({
       let url;
       try { url = new URL(req.url, 'http://' + host); }
       catch { return error(res, 400, 'Invalid request'); }
-      if (url.search || url.hash) return error(res, 400, 'Unsupported parameters');
+      // Browsers and test tools often append tracking/cache-buster queries to
+      // document and static asset URLs. They never affect which file is served.
+      // For read-only demo APIs allow only inert cache-buster keys, while
+      // rejecting all identity/template selection and every POST query.
+      const staticGet = req.method === 'GET' && Object.hasOwn(PUBLIC, url.pathname);
+      const readOnlyApi = req.method === 'GET' &&
+        ['/api/health', '/api/preview'].includes(url.pathname);
+      const cacheKeysOnly = [...url.searchParams].length <= 2 &&
+        [...url.searchParams].every(([key, value]) =>
+          (key === '_' || key === 'v') && value.length <= 64);
+      if (url.hash || (url.search &&
+          !(staticGet || (readOnlyApi && cacheKeysOnly)))) {
+        return error(res, 400, 'Unsupported parameters');
+      }
 
       if (req.method === 'GET' && Object.hasOwn(PUBLIC, url.pathname)) {
         const [name, mime] = PUBLIC[url.pathname];
