@@ -19,7 +19,7 @@ Use **your own locally maintained** HTML and TXT signature templates while the l
      HR_Template.htm
      HR_Template.txt
    ~~~
-   Template placeholders include `$displayName`, `$givenName`, `$sn`, `$mail`, `$title`, `$department`, `$telephoneNumber`, `$mobile`, `$accountName`, `$userPrincipalName`, plus configured `SIGNATUREE_STATIC_VALUES_JSON` keys such as `$footer`. Keep template files readable by UID 10001. A missing or unreadable file causes startup to fail clearly in the container logs.
+   Template placeholders include `$displayName`, `$givenName`, `$sn`, `$mail`, `$title`, `$department`, `$telephoneNumber`, `$mobile`, `$accountName`, `$userPrincipalName`, plus configured `SIGNATUREE_STATIC_VALUES_JSON` keys such as `$footer`. Keep template files readable by UID 10001. A missing or unreadable file causes startup to fail with a safe code and the configured relative filename in the container logs. If an already-running template becomes unavailable, Refresh Preview shows the same diagnostic.
 
    Images referenced as `HR-Dateien/logo.png` must physically exist under `dev/templates/HR-Dateien/logo.png` and be listed in the profile JSON's `images` array. They are embedded as data images for the sandboxed browser preview; the generated HTML and RTF use the original image paths/assets.
 
