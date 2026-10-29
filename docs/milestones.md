@@ -17,7 +17,9 @@ release exists until the end-to-end workflow passes against a test AD and Classi
    **Status:** Isolated HTML-to-RTF converter and real LibreOffice CI planned in PR #5;
    experimental write-once snapshot publisher added in PR #6; stable live Outlook
    paths, retention, mounted-volume verification and integration remain future work.
-5. **M4 — API and UI:** Use a compatible subset of the existing Signaturee frontend,
+5. **M4 — API and UI:** After PR #7's fake-AD→renderer→RTF→snapshot
+   pipeline, add trusted catalog loading and a properly authenticated operator API.
+   Use a compatible subset of the existing Signaturee frontend,
    implement preview/preflight/generate routes, and keep authorization server-side.
 6. **M5 — Docker development deployment:** Non-root OCI build and Compose, health checks,
    configuration/SQLite storage, immutable image and explicitly mounted directories.
