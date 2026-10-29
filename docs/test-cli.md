@@ -61,14 +61,14 @@ export SIGNATUREE_LDAP_BIND_PASSWORD
 ### Step 1: preview only (no writes)
 
 ~~~bash
-node scripts/generate-test.js --config /home/tester/signaturee-test.json \
+node scripts/generate-signatures.js --config /home/tester/signaturee-test.json \
   --user test.user --signature HR --preview --ack-test-directory
 ~~~
 
 ### Step 2: write-once output in an isolated test directory
 
 ~~~bash
-node scripts/generate-test.js --config /home/tester/signaturee-test.json \
+node scripts/generate-signatures.js --config /home/tester/signaturee-test.json \
   --user test.user --signature HR --generate \
   --ack-test-directory --ack-test-output
 unset SIGNATUREE_LDAP_BIND_PASSWORD
