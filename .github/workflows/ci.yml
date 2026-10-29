@@ -77,3 +77,12 @@ jobs:
           path: artifacts/published/
           if-no-files-found: error
           retention-days: 7
+      - name: Full fake-AD to LibreOffice to snapshot smoke test
+        run: npm run demo:integration
+      - name: Upload full-pipeline synthetic output
+        uses: actions/upload-artifact@v4
+        with:
+          name: signaturee-linux-full-integration-demo
+          path: artifacts/integration/
+          if-no-files-found: error
+          retention-days: 7
